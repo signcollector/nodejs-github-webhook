@@ -38,16 +38,11 @@ http.createServer(function(req, res){
       console.log("running hook.sh");
 
       const deploySh = spawn('sh', ['hook.sh'], {detached: true, stdio: ['ignore', out, err]});
-      deploySh.on('close', (code) => {
-        if(code !== 0){
-            res.writeHead(500, contenType);   
-            res.end(JSON.stringify({success: false, msg: fs.readFileSync(errFile), code}));
-        }
+      deploySh.unref();
 
-        res.writeHead(200, contenType);
+      res.writeHead(200, contenType);
 
-        const data = JSON.stringify({success: true});
-        return res.end(data);
-      });
+      const data = JSON.stringify({success: true});
+      return res.end(data);
     });
 }).listen(port);
