@@ -3,7 +3,7 @@ const http    = require('http');
 const spawn   = require('child_process').spawn;
 const crypto  = require('crypto');
 
-const webhookSecret  = 'blastingyourmindawaywithit';
+const webhookSecret  = 'iamblastingyourmindawaywithit';
 const port    = 8081;
 
 const contenType = {"Content-Type": "application/json"};
