@@ -18,11 +18,11 @@ http.createServer(function(req, res){
     res.writeHead(400, contenType);
 
     if(req.method != 'POST'){
-       var data = JSON.stringify({"error": "invalid request, expecting POST"});
+       const data = JSON.stringify({"error": "invalid request, expecting POST"});
        return res.end(data);
     }
 
-    const jsonString = '';
+    let jsonString = '';
     req.on('data', function(data){
         jsonString += data;
     });
@@ -31,13 +31,13 @@ http.createServer(function(req, res){
       const hash = "sha1=" + crypto.createHmac('sha1', webhookSecret).update(jsonString).digest('hex');
       if(hash != req.headers['x-hub-signature']){
           console.log('invalid key');
-          var data = JSON.stringify({success: false, msg: "invalid key", key: hash});
+          const data = JSON.stringify({success: false, msg: "invalid key", key: hash});
           return res.end(data);
       }
 
       console.log("running hook.sh");
 
-      var deploySh = spawn('sh', ['hook.sh'], {detached: true, stdio: ['ignore', out, err]});
+      const deploySh = spawn('sh', ['hook.sh'], {detached: true, stdio: ['ignore', out, err]});
       deploySh.on('close', (code) => {
         if(code !== 0){
             res.writeHead(500, contenType);   
