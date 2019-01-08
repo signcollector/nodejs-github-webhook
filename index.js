@@ -3,7 +3,8 @@ const http    = require('http');
 const spawn   = require('child_process').spawn;
 const crypto  = require('crypto');
 
-const webhookSecret  = 'iamblastingyourmindawaywithit';
+require('dotenv').config();
+const webhookSecret  = process.env.WEBHOOK_SECRET;
 const port    = 8081;
 
 const contenType = {"Content-Type": "application/json"};
