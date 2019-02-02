@@ -37,8 +37,8 @@ http.createServer(function(req, res){
 
       const nextFileNumber = Number(execSync('find . -name "*.*.log" | tail -n 1 | grep -oE "\d+" || echo "0"') + 1);
       console.log('archiving current logs at ' + nextFileNumber);
-      execSync(`mv out.log out.${nextFileNumber}.log`);
-      execSync(`mv err.log err.${nextFileNumber}.log`);
+      execSync(`mv out.log out.${nextFileNumber}.log || echo "creating logs"`);
+      execSync(`mv err.log err.${nextFileNumber}.log || echo "creating logs"`);
 
       const out = fs.openSync('out.log', 'a');
       const err = fs.openSync('err.log', 'a');
