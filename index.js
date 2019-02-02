@@ -1,18 +1,13 @@
-const fs = require('fs');
-const http    = require('http');
-const spawn   = require('child_process').spawn;
-const crypto  = require('crypto');
+const fs       = require('fs');
+const http     = require('http');
+const spawn    = require('child_process').spawn;
+const execSync = require('child_process').execSync
+const crypto   = require('crypto');
 
 require('dotenv').config();
 const webhookSecret  = process.env.WEBHOOK_SECRET;
 const port    = 8081;
-
 const contenType = {"Content-Type": "application/json"};
-const dateName = new Date().toISOString().replace(/\:/g, "-").replace(/\./g, "-");
-const errFile = './'+dateName+'-err.log';
-const outFile = './'+dateName+'-out.log';
-const out = fs.openSync(outFile, 'a');
-const err = fs.openSync(errFile, 'a');
 
 http.createServer(function(req, res){
     console.log("request received");
@@ -36,8 +31,19 @@ http.createServer(function(req, res){
           return res.end(data);
       }
 
-      console.log("running hook.sh");
+      console.log('deleting old logs');
+      const keepXLatest = 10;
+      execSync(`find . -name "*.*.log" | head -n +${keepXLatest} | xargs rm`);
 
+      const nextFileNumber = execSync('$(( `find . -name "*.*.log" | tail -n 1 | grep -oE "\d+"` + 1 ))');
+      console.log('archiving current logs at ' + nextFileNumber);
+      execSync(`mv out.log out.${nextFileNumber}.log`);
+      execSync(`mv err.log err.${nextFileNumber}.log`);
+
+      const out = fs.openSync('out.log', 'a');
+      const err = fs.openSync('err.log', 'a');
+
+      console.log("running hook.sh");
       const deploySh = spawn('sh', ['hook.sh'], {detached: true, stdio: ['ignore', out, err]});
       deploySh.unref();
 
