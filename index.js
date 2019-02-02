@@ -33,7 +33,7 @@ http.createServer(function(req, res){
 
       console.log('deleting old logs');
       const keepXLatest = 10;
-      execSync(`find . -name "*.*.log" | head -n +${keepXLatest} | xargs rm`);
+      execSync(`find . -name "*.*.log" | head -n +${keepXLatest} | xargs rm -f`);
 
       const nextFileNumber = execSync('$(( `find . -name "*.*.log" | tail -n 1 | grep -oE "\d+"` + 1 ))');
       console.log('archiving current logs at ' + nextFileNumber);
