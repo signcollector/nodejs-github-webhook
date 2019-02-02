@@ -35,7 +35,7 @@ http.createServer(function(req, res){
       const keepXLatest = 10;
       execSync(`find . -name "*.*.log" | head -n +${keepXLatest} | xargs rm -f`);
 
-      const nextFileNumber = Number(execSync('`find . -name "*.*.log" | tail -n 1 | grep -oE "\d+"`'));
+      const nextFileNumber = Number(execSync('find . -name "*.*.log" | tail -n 1 | grep -oE "\d+" || echo "0"') + 1);
       console.log('archiving current logs at ' + nextFileNumber);
       execSync(`mv out.log out.${nextFileNumber}.log`);
       execSync(`mv err.log err.${nextFileNumber}.log`);
