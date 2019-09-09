@@ -1,54 +1,55 @@
-var http    = require('http');
-var spawn   = require('child_process').spawn;
-var crypto  = require('crypto');
-var url     = require('url');
+const fs       = require('fs');
+const http     = require('http');
+const spawn    = require('child_process').spawn;
+const execSync = require('child_process').execSync
+const crypto   = require('crypto');
 
-var secret  = 'amazingkey'; // secret key of the webhook
-var port    = 8081; // port
+require('dotenv').config();
+const webhookSecret  = process.env.WEBHOOK_SECRET;
+const port    = 8081;
+const contenType = {"Content-Type": "application/json"};
 
 http.createServer(function(req, res){
-    
     console.log("request received");
-    res.writeHead(400, {"Content-Type": "application/json"});
+    res.writeHead(400, contenType);
 
-    var path = url.parse(req.url).pathname;
-
-    if(path!='/push' || req.method != 'POST'){
-       var data = JSON.stringify({"error": "invalid request"});
-       return res.end(data); 
+    if(req.method != 'POST'){
+       const data = JSON.stringify({"error": "invalid request, expecting POST"});
+       return res.end(data);
     }
 
-
-    var jsonString = '';
+    let jsonString = '';
     req.on('data', function(data){
         jsonString += data;
     });
 
     req.on('end', function(){
-      var hash = "sha1=" + crypto.createHmac('sha1', secret).update(jsonString).digest('hex');
+      const hash = "sha1=" + crypto.createHmac('sha1', webhookSecret).update(jsonString).digest('hex');
       if(hash != req.headers['x-hub-signature']){
           console.log('invalid key');
-          var data = JSON.stringify({"error": "invalid key", key: hash});
+          const data = JSON.stringify({success: false, msg: "invalid key", key: hash});
           return res.end(data);
-      } 
-       
+      }
+
+      console.log('deleting old logs');
+      const keepXLatest = 10;
+      execSync(`find . -name "*.*.log" | head -n +${keepXLatest} | xargs rm -f`);
+
+      const nextFileNumber = Number(execSync('find . -name "*.*.log" | tail -n 1 | grep -oE "\d+" || echo "0"')) + 1;
+      console.log('archiving current logs at ' + nextFileNumber);
+      execSync(`mv out.log out.${nextFileNumber}.log || echo "creating logs"`);
+      execSync(`mv err.log err.${nextFileNumber}.log || echo "creating logs"`);
+
+      const out = fs.openSync('out.log', 'a');
+      const err = fs.openSync('err.log', 'a');
+
       console.log("running hook.sh");
-   
-      var deploySh = spawn('sh', ['hook.sh']);
-      deploySh.stdout.on('data', function(data){
-          var buff = new Buffer(data);
-          console.log(buff.toString('utf-8'));
-      });
+      const deploySh = spawn('sh', ['hook.sh'], {detached: true, stdio: ['ignore', out, err]});
+      deploySh.unref();
 
-      
-    res.writeHead(400, {"Content-Type": "application/json"});
-    
-    var data = JSON.stringify({"success": true});
+      res.writeHead(200, contenType);
+
+      const data = JSON.stringify({success: true});
       return res.end(data);
- 
     });
-
-    
 }).listen(port);
-
-console.log("Server listening at " + port);

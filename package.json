@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "description": "Github Webhook server built with Node.js",
   "main": "index.js",
-  "dependencies": {},
+  "dependencies": {
+    "dotenv": "^6.2.0"
+  },
   "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
