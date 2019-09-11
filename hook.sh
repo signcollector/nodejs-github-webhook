@@ -6,4 +6,4 @@ git_pull_signcollector() {
 cd ~/deploy/signcollector/deployment/
 git_pull_signcollector
 
-./deploy.sh staging
+./deploy.sh staging --with-db
