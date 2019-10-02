@@ -9,12 +9,12 @@ git_pull_signcollector() {
 
 ENV_NAME=$1
 
-printf "using env $ENV_NAME"
+printf "using env $ENV_NAME\n"
 
 cd ~/deploy/signcollector-application/deployment/ || exit
 git_pull_signcollector
 
-if [[ "$ENV_NAME" == 'staging' ]]; then
+if [[ "$ENV_NAME" == "staging" ]]; then
   # complete redeploy of staging env
   ./deploy.sh staging --with-db
 else
