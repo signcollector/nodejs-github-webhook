@@ -43,8 +43,14 @@ http.createServer(function(req, res){
       const out = fs.openSync('out.log', 'a');
       const err = fs.openSync('err.log', 'a');
 
-      console.log("running hook.sh");
-      const deploySh = spawn('sh', ['hook.sh'], {detached: true, stdio: ['ignore', out, err]});
+      let jsonPayload = JSON.parse(jsonString)
+      let repoMatch = jsonPayload.repository.full_name.match(/signcollector\/signcollector-application-config-(\w+)/)
+      let envName = "staging"
+      if(repoMatch && repoMatch[1]){
+        envName = repoMatch[1];
+      }
+      console.log("running deploy_hook.sh " + envName);
+      const deploySh = spawn('sh', ['deploy_hook.sh', envName], {detached: true, stdio: ['ignore', out, err]});
       deploySh.unref();
 
       res.writeHead(200, contenType);
