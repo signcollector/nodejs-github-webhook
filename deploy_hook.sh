@@ -9,6 +9,8 @@ git_pull_signcollector() {
 
 ENV_NAME=$1
 
+printf "using env $ENV_NAME"
+
 cd ~/deploy/signcollector-application/deployment/ || exit
 git_pull_signcollector
 
