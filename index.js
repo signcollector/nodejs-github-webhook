@@ -9,8 +9,15 @@ const webhookSecret  = process.env.WEBHOOK_SECRET;
 const port    = 8081;
 const contenType = {"Content-Type": "application/json"};
 
+const LOGS = [];
+
+function log(msg){
+  console.log(msg);
+  LOGS.push(msg);
+}
+
 http.createServer(function(req, res){
-    console.log("request received");
+    log("request received");
     res.writeHead(400, contenType);
 
     if(req.method != 'POST'){
@@ -26,17 +33,17 @@ http.createServer(function(req, res){
     req.on('end', function(){
       const hash = "sha1=" + crypto.createHmac('sha1', webhookSecret).update(jsonString).digest('hex');
       if(hash != req.headers['x-hub-signature']){
-          console.log('invalid key');
+          log('invalid key');
           const data = JSON.stringify({success: false, msg: "invalid key", key: hash});
           return res.end(data);
       }
 
-      console.log('deleting old logs');
+      log('deleting old logs');
       const keepXLatest = 10;
       execSync(`find . -name "*.*.log" | head -n +${keepXLatest} | xargs rm -f`);
 
       const nextFileNumber = Number(execSync('find . -name "*.*.log" | tail -n 1 | grep -oE "\d+" || echo "0"')) + 1;
-      console.log('archiving current logs at ' + nextFileNumber);
+      log('archiving current logs at ' + nextFileNumber);
       execSync(`mv out.log out.${nextFileNumber}.log || echo "creating logs"`);
       execSync(`mv err.log err.${nextFileNumber}.log || echo "creating logs"`);
 
@@ -49,13 +56,13 @@ http.createServer(function(req, res){
       if(repoMatch && repoMatch[1]){
         envName = repoMatch[1];
       }
-      console.log("running deploy_hook.sh " + envName);
+      log("running deploy_hook.sh " + envName);
       const deploySh = spawn('sh', ['deploy_hook.sh', envName], {detached: true, stdio: ['ignore', out, err]});
       deploySh.unref();
 
       res.writeHead(200, contenType);
 
-      const data = JSON.stringify({success: true});
+      const data = JSON.stringify({success: true, env: envName, logs: LOGS.join('\n')});
       return res.end(data);
     });
 }).listen(port);
