@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -e
 
 test -z "$1" && echo 'env name missing' && exit 1
