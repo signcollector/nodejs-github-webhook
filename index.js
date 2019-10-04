@@ -57,7 +57,7 @@ http.createServer(function(req, res){
         envName = repoMatch[1];
       }
       log("running deploy_hook.sh " + envName);
-      const deploySh = spawn('sh', ['deploy_hook.sh', envName], {detached: true, stdio: ['ignore', out, err]});
+      const deploySh = spawn('bash', ['deploy_hook.sh', envName], {detached: true, stdio: ['ignore', out, err]});
       deploySh.unref();
 
       res.writeHead(200, contenType);
