@@ -24,4 +24,5 @@ if [[ "$ENV_NAME" == "staging" ]]; then
 else
   # update configurations of a running campaign
   ./merge-deployment-configuration.sh $ENV_NAME --skip-credentials
+  ./deploy.sh $ENV_NAME --skip-db --skip-install
 fi
